@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Berlin Web Map</title>
+    <!-- Bootstrap CDN link -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <!-- load Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    <!-- Add icon library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- load Leaflet js -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Load Jquery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Load Ajax -->
+    <script src="resources/leaflet.ajax.js"></script>
+
+
+    <!-- CSS Coding -->
+    <style>
+        #header {
+            height: 75px;
+            background-color: darkgoldenrod;
+        }
+
+        #side_panel {
+            height: 800px;
+            background-color: beige;
+        }
+
+        #mapdiv {
+            height: 800px;
+            background-color: salmon;
+        }
+
+        #footer {
+            height: 75px;
+            background-color: darkgray;
+        }
+
+        #map_coords {}
+
+        .attractions {
+            margin-bottom: 10px;
+        }
+
+        #side_panel button {
+            margin-bottom: 5px;
+        }
+
+        /* Style buttons */
+        #homeMarker {
+            background-color: DodgerBlue;
+            /* Blue background */
+            border: none;
+            /* Remove borders */
+            color: white;
+            /* White text */
+            padding: 12px 16px;
+            /* Some padding */
+            font-size: 16px;
+            /* Set a font size */
+            cursor: pointer;
+            /* Mouse pointer on hover */
+        }
+
+        /* Darker background on mouse-over */
+        #homeMarker:hover {
+            background-color: RoyalBlue;
+        }
+
+    </style>
+</head>
+
+<body>
+    <!-- Page Layout -->
+    <div id="header" class="col-md-12">
+        <h1 class="text-center">Berlin City</h1>
+    </div>
+
+    <div id="side_panel" class="col-md-2">
+        <h1 class="text-center">Attractions</h1>
+        <!-- Added Home icon to buttons  -->
+        <button id="homeMarker" onclick="inititializeFnc()"><i class="fa fa-home"></i></button>
+    </div>
+
+    <div id="mapdiv" class="col-md-10">
+    </div>
+    <div id="footer" class="dol-md-12">
+        <h4 id="map_coords" class="text-center"> Latitude: 13.40 Longitude:52.52 Zoom Level:11 </h4>
+        <h4 class="text-center"> &copy;2021<a href="https://www.fiverr.com/sedaworld?public_mode=true"> SEDA World </a> </h4>
+    </div>
+    <!-- Javascript for Initialize Map & View OSM  -->
+    <script>
+        // Initialize Map
+        var mymap = L.map('mapdiv')
+        mymap.setView([52.52, 13.40], 15);
+
+        // View OSM
+        var backgroundLayer = L.tileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+        mymap.addLayer(backgroundLayer);
+
+        var geojsonLayer = new L.GeoJSON.AJAX('data/attractions.geojson', {
+            pointToLayer: function(feature, latlng) {
+                var str = "<button id='zoomTo" + feature.properties.Name.replace(/ /g, '');
+                str += "'class='form-control btn btn-primary attraction' >";
+                str += feature.properties.Name + "</button>";
+                $("#side_panel").append(str);
+                $("#zoomTo" + feature.properties.Name.replace(/ /g, '')).click(function() {
+                    mymap.setView([latlng.lat, latlng.lng], 18);
+                });
+            }
+        });
+
+        function inititializeFnc() {
+            //document.getElementById("demo").innerHTML = "Hello World";
+            console.log("initialize method called");
+            mymap.setView([52.52, 13.40], 15);
+        }
+        // Add the JavaScript code to read the ajax file and add it to the map and Add a pointToLayer option that creates the popup for each attraction
+        var geojsonLayer = new L.GeoJSON.AJAX('data/attractions.geojson', {
+            pointToLayer: function(feature, latlng) {
+                var str = "<h4>" + feature.properties.Name + "</h4><hr>";
+                str += "<a href='" + feature.properties.web + "' target = 'blank' >";
+                str += "<img src = 'img/" + feature.properties.image + "' width = '200px' >";
+                str += "</a>";
+                return L.marker(latlng).bindPopup(str);
+            }
+        });
+        geojsonLayer.addTo(mymap);
+
+        // handle map event(e) mouse move 
+        mymap.on('mousemove', function(e) {
+            var str = "Latitude: " + e.latlng.lat.toFixed(5) + " Longitude: " + e.latlng.lng.toFixed(5) + " Zoom Level: " + mymap.getZoom();
+            $("#map_coords").html(str); // jQuery                
+        });
+
+    </script>
+</body>
+
+</html>
